@@ -7,7 +7,7 @@ compatibility: Requires Python 3.12+.
 license: MIT
 metadata:
   author: Konstantin Roshchupkin
-  version: "0.2"
+  version: "0.3.0"
 ---
 
 # Comparing Python libraries

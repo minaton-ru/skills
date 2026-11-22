@@ -45,6 +45,8 @@ npx skills update    # install them
 |---|---|
 | [comparing-python-libraries](skills/comparing-python-libraries/SKILL.md) | Compares a shortlist of Python libraries or frameworks you have already found for one task, and names a winner or the finalists. It screens out stale libraries and ones with unfixed CVEs, then scores the rest on fixed weighted criteria: adoption, maintenance, documentation and performance. Run it manually: `/comparing-python-libraries <task description>: <library>, <library>, ...` |
 
+For `comparing-python-libraries`, install the [GitHub CLI](https://cli.github.com) and run `gh auth login`, or set `GITHUB_TOKEN`: without them the skill's script hits GitHub's anonymous rate limits, runs slower, and may report some figures as not accessible.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) file for details.
