@@ -29,9 +29,9 @@ The step numbers and labels below are working vocabulary. In messages to the use
 
 ## 1. Check fit
 
-Resolve each name to its repository (`https://pypi.org/pypi/<name>/json` → `info.project_urls`; when no repository is listed there, follow the homepage link). Then read the README or docs landing page and decide whether the library solves the user's task.
+Run `python3 scripts/collect_metrics.py <name> [<name> ...]` once for the whole shortlist; run it, don't read it. Where `python3` is missing, as is common on Windows, use `python` or `py -3` instead. Its JSON gives each library's repository, latest version and the figures for steps 2 and 3, each with a source link. Then read the README or docs landing page and decide whether the library solves the user's task.
 
-The library name provided by the user may differ from the PyPI name (Django REST framework is `djangorestframework`): search PyPI and state the mapping. A library not on PyPI is marked as such and its repository is found by web search. When the repository is a monorepo holding more than this library, say that its stars, forks and issues are shared.
+The library name provided by the user may differ from the PyPI name (Django REST framework is `djangorestframework`): search PyPI and state the mapping. A library not on PyPI is marked as such and its repository is found by web search. When the repository is a monorepo holding more than this library, say that its stars, forks and issues are shared. When the script reports `on_pypi: false`, find the package or repository yourself, then rerun the script with the PyPI name if there is one.
 
 A **completely unsuitable** library solves a different problem altogether, like an ORM on a shortlist of HTTP clients. When the user named a Python version, framework or platform, check the library supports it; an unsupported one is completely unsuitable. This is the one reason to pause before the report: tell the user which library and why, and ask whether to remove it from the comparison or keep it. Continue with their answer. A partial fit is a note to carry into the report, and the work continues.
 
@@ -41,8 +41,8 @@ Done when every library has a one-line fit verdict.
 
 A **definite loser** meets any one of these:
 
-- **Stale**: the repository is archived, or the last commit on the default branch is more than a year old: a year without commits means bug and security fixes are not coming either. Commits decide this, whatever the release dates say.
-- **Unfixed CVE**: the latest PyPI release is affected by a CVE. The script queries OSV with that version (`{"version": "<latest>", "package": {"name": "<pypi name>", "ecosystem": "PyPI"}}`) and the GitHub Advisory Database; a CVE with `affects_latest: true` makes the library a definite loser. Past, fixed CVEs go to the CVEs row in step 3 with their date and fixed version. An advisory without a CVE id is listed in that row but screens nothing out.
+- **Stale**: the repository is archived, or the last commit on the default branch is more than a year old: a year without commits means bug and security fixes are not coming either. Commits decide this, whatever the release dates say (script: `archived`, `last_commit_date`).
+- **Unfixed CVE**: the latest PyPI release is affected by a CVE. The script checks that version against OSV and the GitHub Advisory Database; any CVE under `cves.unfixed` makes the library a definite loser. For a CVE under `cves.needs_manual_check`, open its source and check whether the latest release is affected. Fixed CVEs go to the CVEs row in step 3 as a count with the date of the most recent one (`cves.count`, `cves.latest_published`). Advisories without a CVE id (`cves.advisories_without_cve`) are counted in that row but screen nothing out.
 - **No async where the task already uses it**: the user's task is known to run on async Python (the description says so or names an async framework), and the library has no async support.
 
 Every other library is a **candidate**. Steps 3 and 4 work on candidates only, so a definite loser needs no further evidence.
@@ -55,18 +55,18 @@ Fill every row of this table for every candidate. Weights are the user's: High o
 
 | Criterion | Weight | Better when | Where to look |
 |---|---|---|---|
-| Used by (dependent repositories) | High | more | "Used by" on the GitHub repo page, or `/<owner>/<repo>/network/dependents`, for the PyPI package being compared. The REST API does not expose it. When neither the repo page nor the dependents page shows a count, write `not found` |
-| Forks | High | more | `GET /repos/<owner>/<repo>` → `forks_count` |
+| Used by (dependent repositories) | High | more | script: `used_by`. When it is null, look at the repo page yourself; when no count is shown there either, write `not found` |
+| Forks | High | more | script: `forks` |
 | CVEs | High | none found; found long ago and fixed is acceptable | already gathered in step 2 |
-| Stars | Medium | more | `stargazers_count` |
-| Issues | Medium | more in total (open + closed): a sign of an active user base | `GET /search/issues?q=repo:<owner>/<repo>+type:issue` → `total_count`. The repo's `open_issues_count` mixes in pull requests |
-| Pull requests | Medium | more, and they get merged or closed. A pile of old open pull requests is suspicious | the same search with `type:pr`, then with `+is:merged` and with `+state:open` |
+| Stars | Medium | more | script: `stars` |
+| Issues | Medium | more in total (open + closed): a sign of an active user base | script: `issues_total` |
+| Pull requests | Medium | more, and they get merged or closed. A pile of old open pull requests is suspicious | script: `prs_total`, `prs_merged`, `prs_open` |
 | Documentation quality | Medium | detailed: tutorial, API reference, examples | the official docs site, and what developers say about the docs |
 | Recommended in articles | Medium | popular developer resources recommend it for this kind of task | web search |
 | Performance and readiness for high load | Medium when the user's task needs it, otherwise Low | faster, and proven under heavy load | published benchmarks (independent ones outrank the library's own), docs, reports of large production use |
-| Repository age | Low | older | `created_at` |
-| Main contributors | Low | several active ones. A single contributor is a risk to future updates | `GET /repos/<owner>/<repo>/contributors`, and who committed in the last year |
-| License | Low | open source | `license` in the repo response, or PyPI |
+| Repository age | Low | older | script: `created_at` |
+| Main contributors | Low | several active ones. A single contributor is a risk to future updates | script: `contributors_total`, `contributors_active_last_year` |
+| License | Low | open source | script: `license` |
 | Async support | Low | async supported; both sync and async is better still. Count it only when the user's task benefits from async but does not require it — when it requires async, step 2 has already handled it | docs |
 | Extensibility | Low | documented ways to extend it: plugins, hooks, middleware, subclassing | docs |
 | Scalability | Low | keeps working as the project and its load grow | docs, articles |
@@ -76,9 +76,9 @@ A criterion that has no meaning for this kind of library, such as readiness for 
 
 While gathering, note every **outsider**: a library outside the shortlist that an article or any other source recommends for the user's task. The report needs them.
 
-GitHub search endpoints are rate-limited (10 requests a minute without a token). Use `gh api` when it is installed, pace the calls, and retry a rejected call after a pause.
+The script paces and retries GitHub calls itself. A field it still could not fetch is listed under `errors`: record `rate limited` as `not accessible`, and never estimate the figure.
 
-A repository hosted on GitLab, Bitbucket, Gitea or elsewhere is measured with that host's equivalents (stars, forks, issues, merge requests). Where a metric has no equivalent there, such as "Used by", write `no equivalent` and mention it in the report, because counts from different hosts are only roughly comparable.
+The script covers GitHub only and returns other hosts with "host not supported". A repository hosted on GitLab, Bitbucket, Gitea or elsewhere is measured with that host's equivalents (stars, forks, issues, merge requests). Where a metric has no equivalent there, such as "Used by", write `no equivalent` and mention it in the report, because counts from different hosts are only roughly comparable.
 
 Done when every cell holds a figure or finding with its source, `not applicable` with its reason, `not found` after a real attempt, `not accessible` when the source refused access (rate limit, login wall) after retries, or `no equivalent` when the host has no such metric.
 
