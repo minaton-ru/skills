@@ -13,7 +13,7 @@ compatibility: Requires Python 3.12+.
 license: MIT
 metadata:
   author: Konstantin Roshchupkin
-  version: "0.3.1"
+  version: "0.4.0"
 ---
 
 # Comparing Python libraries
@@ -113,11 +113,12 @@ Done when there is one winner or a named set of finalists.
 ## 5. Report
 
 The report is a reply in the chat, shaped by the verdict:
+Follow the matching skeleton in [reference/report-templates.md](reference/report-templates.md).
 
 - **A winner**: report the winner and why it wins, with a table of every criterion that shows the winner's figures beside the figures of each other candidate, so the user sees the size of the lead.
 - **Several finalists**: name them, then give a brief table of only the criteria where they differ. Close with which way the weighted criteria lean, or say that they are level and the task's own needs must break the tie.
-  Add one short tip: the user can compare the finalists on https://trends.domage.dev (names separated by `;`), which charts how many new GitHub repositories mention each name over time. Leave the tip out if the site does not load. It shows mentions, not adoption, so it never affects the verdict.
-- **Every library is a definite loser**: say so plainly.
+  Add one short tip: the user can open `https://trends.domage.dev/?search=<lib>;<lib>&showTrend=true`, which fills in the finalists' names, and run the search to chart how many new GitHub repositories mention each name over time. Leave the tip out if the site does not load. It shows mentions, not adoption, so it never affects the verdict.
+- **Every library is a definite loser**: say so plainly, then offer outsiders.
 
 In every shape:
 
@@ -126,10 +127,11 @@ In every shape:
 - State the CVE status of every library the report names as winner or finalists.
 - Give each figure with a link to its source, so the user can check it. Articles are the exception: base what you say about them only on articles you actually opened, then report what they recommend without naming or linking them, which keeps the report short.
 - Let the criteria tables be as full as the evidence needs, and keep the text around them brief: a few sentences per section.
-- Carry over any partial-fit note from step 1, any staleness left `not accessible` in step 2, and any `not found` that could have changed the verdict.
+- Carry over any partial-fit note from step 1, any staleness left `not accessible` in step 2, and any `not found` or `not accessible` cell that could have changed the verdict.
 - Keep to prose and tables. The user is choosing a library and has not asked how to use it, so code examples stay out.
 
 **Outsiders** come last, after the verdict. List up to two, those most often recommended for this kind of task, each with a brief argument: what makes it worth comparing against the winner or finalists.
-Then ask the user whether to add any of them to the comparison. A library the user adds goes through steps 1 to 3, and the verdict is reached again between it and the winner or finalists. Leave this part out when there are no outsiders, or when the user has said the shortlist is closed.
+When every library is a definite loser, step 3 never ran, so search the web for libraries recommended for the user's task, and argue instead why each could do it.
+Then ask the user whether to add any of them to the comparison. A library the user adds goes through steps 1 to 3, and the verdict is reached again between it and the winner or finalists, or among the added libraries when there were none. Leave this part out when there are no outsiders, or when the user has said the shortlist is closed.
 
 Before sending, check the report: every figure carries a source link, every winner or finalist has its CVE status stated, every definite loser has its one-line reason, and the outsiders section is present or deliberately left out.
