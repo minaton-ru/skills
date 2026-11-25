@@ -13,7 +13,7 @@ compatibility: Requires Python 3.12+.
 license: MIT
 metadata:
   author: Konstantin Roshchupkin
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
 # Comparing Python libraries
@@ -117,7 +117,6 @@ Follow the matching skeleton in [reference/report-templates.md](reference/report
 
 - **A winner**: report the winner and why it wins, with a table of every criterion that shows the winner's figures beside the figures of each other candidate, so the user sees the size of the lead.
 - **Several finalists**: name them, then give a brief table of only the criteria where they differ. Close with which way the weighted criteria lean, or say that they are level and the task's own needs must break the tie.
-  Add one short tip: the user can open `https://trends.domage.dev/?search=<lib>;<lib>&showTrend=true`, which fills in the finalists' names, and run the search to chart how many new GitHub repositories mention each name over time. Leave the tip out if the site does not load. It shows mentions, not adoption, so it never affects the verdict.
 - **Every library is a definite loser**: say so plainly, then offer outsiders.
 
 In every shape:
